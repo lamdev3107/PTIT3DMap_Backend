@@ -1,7 +1,7 @@
 import { errorHandlingMiddleware } from "../middlewares/errorHandlingMiddleware";
-
+import buildingRouter from "./building.route";
 const initRoutes = (app) => {
-  //   app.use("/api/v1/auth", authRouter);
+  app.use("/api/buildings", buildingRouter);
   //   app.use("/api/v1/insert", insertRouter);
   //   app.use("/api/v1/categories", categoryRouter);
   //   app.use("/api/v1/posts", postRouter);
