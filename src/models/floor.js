@@ -5,8 +5,12 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Floor.belongsTo(models.Building, {
-        foreignKey: "buldingId",
+        foreignKey: "buildingId",
         as: "building",
+      });
+      Floor.hasMany(models.Room, {
+        foreignKey: "floorId",
+        as: "rooms",
       });
     }
   }
@@ -17,13 +21,21 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
+      buildingId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      buildingId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+      description: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      image: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     {

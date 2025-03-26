@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get("/", controllers.getAllBuildings);
 router.get("/:id", controllers.getBuilding);
+router.get("/:id/floors", controllers.getBuildingFloors);
 
 router.post("/", controllers.createNewBuilding);
 router.delete("/:id", controllers.deleteBuilding);

@@ -27,10 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      roomId: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+
       floorId: {
         type: DataTypes.INTEGER,
         allowNull: false,

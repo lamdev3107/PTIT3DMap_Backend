@@ -91,6 +91,28 @@ const getBuilding = async (req, res, next) => {
     next(error);
   }
 };
+const getBuildingFloors = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id)
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "ID is required",
+        data: null,
+      });
+    const floors = await db.Floor.findAll({
+      where: { buildingId: id },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "get building's floors successfully",
+      data: floors,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const deleteBuilding = async (req, res, next) => {
   try {
@@ -124,9 +146,7 @@ const updateBuilding = async (req, res, next) => {
         data: null,
       });
     }
-    const building = await db.Building.findByPk(id, {
-      raw: true,
-    });
+    const building = await db.Building.findByPk(id);
     if (!building) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
@@ -134,13 +154,11 @@ const updateBuilding = async (req, res, next) => {
         data: null,
       });
     }
-    await db.Building.update({
+    await building.update({
       name,
       description,
     });
-    const updatedBuilding = await db.Building.findByPk(id, {
-      raw: true,
-    });
+    const updatedBuilding = await db.Building.findByPk(id, { raw: true });
     return res.status(200).json({
       success: true,
       message: "Building created successfully",
@@ -157,4 +175,5 @@ export {
   getBuilding,
   deleteBuilding,
   updateBuilding,
+  getBuildingFloors,
 };
