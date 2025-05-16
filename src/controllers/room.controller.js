@@ -1,10 +1,19 @@
 import { StatusCodes } from "http-status-codes";
 import db from "../models";
+import { Op } from "sequelize";
 
 const createNewRoom = async (req, res, next) => {
   try {
-    const { floorId, navigationId, name, description, image } = req.body;
-    if (!name || !floorId) {
+    const { floorId, roomId, navigationId, name, description, image } =
+      req.body;
+    const model = req.file;
+    let modelURL = null;
+    let modelPublicId = null;
+    if (model) {
+      modelURL = model.path;
+      modelPublicId = model.filename;
+    }
+    if (!name || !floorId || !roomId) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Missing required fields",
@@ -13,6 +22,9 @@ const createNewRoom = async (req, res, next) => {
     }
     const newRoom = await db.Room.create({
       floorId,
+      roomId,
+      modelURL,
+      modelPublicId,
       navigationId,
       name,
       description,
@@ -39,8 +51,6 @@ const getRoom = async (req, res, next) => {
       });
     const room = await db.Room.findOne({
       where: { id },
-      raw: true,
-      nest: true,
       include: [
         {
           model: db.Floor,
@@ -50,6 +60,10 @@ const getRoom = async (req, res, next) => {
         {
           model: db.Navigation,
           as: "navigation",
+        },
+        {
+          model: db.Scene,
+          as: "scenes",
         },
       ],
     });
@@ -89,8 +103,15 @@ const deleteRoom = async (req, res, next) => {
 const updateRoom = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const { floorId, navigationId, name, description, image } = req.body;
-    if (!name || !floorId) {
+    const { floorId, roomId, navigationId, name, description, image } =
+      req.body;
+    let modelURL = null;
+    let modelPublicId = null;
+    if (req.file) {
+      modelURL = req.file.path;
+      modelPublicId = req.file.filename;
+    }
+    if (!name || !floorId || !roomId) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Missing required fields",
@@ -107,8 +128,11 @@ const updateRoom = async (req, res, next) => {
     }
     await building.update({
       floorId,
+      roomId,
       navigationId,
       name,
+      modelURL,
+      modelPublicId,
       description,
       image,
     });
@@ -131,22 +155,39 @@ const getAllRooms = async (req, res, next) => {
       page = 1,
       limit = 10,
     } = req.query;
-
     // Kiểm tra orderby hợp lệ
-    const allowedFields = ["createdAt"];
+    const allowedFields = ["createdAt", "name", "floor", "building"];
     const allowedOrders = ["asc", "desc"];
     const orderField = allowedFields.includes(orderby) ? orderby : "createdAt";
     const orderDirection = allowedOrders.includes(order.toLowerCase())
       ? order.toLowerCase()
       : "desc";
-    let whereClause = {};
-    if (name) {
-      whereClause = {
-        [Op.and]: [
-          Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("name")), {
-            [Op.like]: `%${name.toLowerCase()}%`,
-          }),
+    let orderArray = [];
+    if (orderField === "floor") {
+      orderArray = [
+        [{ model: db.Floor, as: "floor" }, "name", orderDirection],
+        ,
+      ];
+    } else if (orderField === "building") {
+      orderArray = [
+        [
+          { model: db.Floor, as: "floor" },
+          { model: db.Building, as: "building" },
+          "name",
+          orderDirection,
         ],
+      ];
+    } else if (orderField === "name") {
+      orderArray = ["name", orderDirection];
+    } else {
+      orderArray = ["createdAt", orderDirection];
+    }
+
+    let whereClause = {};
+
+    if (name) {
+      whereClause.name = {
+        [Op.like]: `%${name}%`,
       };
     }
 
@@ -158,11 +199,15 @@ const getAllRooms = async (req, res, next) => {
         {
           model: db.Floor,
           as: "floor",
-          include: [{ model: db.Building, as: "building" }],
+          include: [
+            {
+              model: db.Building,
+              as: "building",
+            },
+          ],
         },
       ],
-      order: [[orderField, orderDirection]],
-
+      order: [orderArray], // Sửa cách sắp xếp theo floor.name
       limit: parseInt(limit),
       offset: parseInt(offset),
     });
@@ -182,4 +227,42 @@ const getAllRooms = async (req, res, next) => {
   }
 };
 
-export { createNewRoom, getRoom, deleteRoom, updateRoom, getAllRooms };
+const getRoomScenes = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "room id is required",
+        data: null,
+      });
+    }
+    const room = await db.Room.findByPk(id, {
+      include: [{ model: db.Scene, as: "scenes" }],
+    });
+
+    if (!room) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Room not found",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Room scenes fetched successfully",
+      data: room.scenes, // Changed from room.Scene to room.scenes
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export {
+  createNewRoom,
+  getRoom,
+  deleteRoom,
+  updateRoom,
+  getAllRooms,
+  getRoomScenes,
+};

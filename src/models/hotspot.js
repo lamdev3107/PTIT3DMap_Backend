@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Building extends Model {
+  class Hotspot extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -9,41 +9,48 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Building.hasMany(models.Floor, {
-        foreignKey: "buildingId",
-        as: "floors",
+
+      Hotspot.belongsTo(models.Scene, {
+        foreignKey: "scene",
       });
     }
   }
-  Building.init(
+  Hotspot.init(
     {
       id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         primaryKey: true,
-        autoIncrement: true,
       },
-      name: {
+      scene: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      sceneId: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      description: {
+      text: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-      modelURL: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      pitch: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
       },
-      modelPublicId: {
+      yaw: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+      },
+      type: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
     },
     {
       sequelize,
-      modelName: "Building",
+      modelName: "Hotspot",
       timestamps: true, // Thêm timestamps để Sequelize tự động cập nhật createdAt & updatedAt
     }
   );
-  return Building;
+  return Hotspot;
 };

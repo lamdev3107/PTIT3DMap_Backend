@@ -38,9 +38,8 @@ const getFloor = async (req, res, next) => {
       });
     const floor = await db.Floor.findOne({
       where: { id },
-      raw: true,
-      nest: true,
-      include: [{ model: db.Building, as: "building" }],
+      include: [{ model: db.Building, as: "building" }, { model: db.Room, as: "rooms" }],
+      // include: [{ model: db.Room, as: "rooms" }],
     });
 
     return res.status(200).json({
@@ -110,5 +109,32 @@ const updateFloor = async (req, res, next) => {
     next(error);
   }
 };
-
-export { createNewFloor, getFloor, deleteFloor, updateFloor };
+const getFloorRooms = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id)
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "ID is required",
+        data: null,
+      }); 
+    const floor = await db.Floor.findOne({
+      where: { id },
+      include: 
+        {
+          model: db.Room,
+          as: "rooms",
+        },
+      
+    })
+    return res.status(200).json({
+      success: true,
+      message: "Rooms fetched successfully",
+      data: floor.rooms,
+    });
+  }
+  catch (error) {
+    next(error);
+  } 
+}
+export { createNewFloor, getFloor, deleteFloor, updateFloor, getFloorRooms };

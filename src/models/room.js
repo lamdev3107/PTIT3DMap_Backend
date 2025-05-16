@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "navigationId",
         as: "navigation",
       });
+      Room.hasMany(models.Scene, {
+        foreignKey: "roomId",
+        as: "scenes",
+      });
     }
   }
   Room.init(
@@ -27,7 +31,10 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-
+      roomId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       floorId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -41,6 +48,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       image: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      modelURL: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      modelPublicId: {
         type: DataTypes.STRING,
         allowNull: true,
       },

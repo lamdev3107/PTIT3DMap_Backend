@@ -6,5 +6,7 @@ const router = express.Router();
 router.post("/", controllers.createNewFloor);
 router.delete("/:id", controllers.deleteFloor);
 router.put("/:id", controllers.updateFloor);
+router.get("/:id", controllers.getFloor);
+router.get("/:id/rooms", controllers.getFloorRooms);
 
 export default router;

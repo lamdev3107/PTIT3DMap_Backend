@@ -6,18 +6,24 @@ import initRoutes from "./src/routes";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import connectDatabase from "./src/config/database.config";
+import multer from 'multer';
 
 const app = express();
 
 //config cookie-parser
 app.use(cookieParser());
-//config body-parser
+
+// Configure multer for handling form-data/multipart uploads
+// const upload = multer();
+// app.use(upload.any());
+
+//config body-parser for JSON and URL-encoded data
 app.use(bodyParser.json());
-// Sử dụng formidable middleware để xử lý FormData
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Parse JSON and URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(
   cors({
     //Chan tat ca cac domain khac ngoai domain nay

@@ -1,8 +1,16 @@
 import { StatusCodes } from "http-status-codes";
 import db from "../models";
+import { Op } from "sequelize";
 
 const createNewBuilding = async (req, res, next) => {
   try {
+    const model = req.file;
+    let modelURL = null;
+    let modelPublicId = null;
+    if (model) {
+      modelURL = model.path;
+      modelPublicId = model.filename;
+    }
     const { name, description } = req.body;
     if (!name) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -14,6 +22,8 @@ const createNewBuilding = async (req, res, next) => {
     const newBuilding = await db.Building.create({
       name,
       description,
+      modelURL,
+      modelPublicId,
     });
     return res.status(200).json({
       success: true,
@@ -32,16 +42,22 @@ const getAllBuildings = async (req, res, next) => {
       order = "desc", // Giá trị mặc định là giảm dần (mới nhất trước)
       page = 1,
       limit = 10,
+      search = null,
     } = req.query;
 
     // Kiểm tra orderby hợp lệ
-    const allowedFields = ["createdAt"];
+    const allowedFields = ["id", "name"];
     const allowedOrders = ["asc", "desc"];
     const orderField = allowedFields.includes(orderby) ? orderby : "createdAt";
     const orderDirection = allowedOrders.includes(order.toLowerCase())
       ? order.toLowerCase()
       : "desc";
     let whereClause = {};
+    if (search) {
+      whereClause.name = {
+        [Op.like]: `%${search}%`,
+      };
+    }
 
     const offset = (page - 1) * limit;
     const { rows: buildings, count } = await db.Building.findAndCountAll({
@@ -49,6 +65,9 @@ const getAllBuildings = async (req, res, next) => {
       order: [[orderField, orderDirection]],
       limit: parseInt(limit),
       offset: parseInt(offset),
+      // attributes: {
+      //   exclude: ["model"],
+      // },
     });
 
     return res.status(200).json({
@@ -77,9 +96,18 @@ const getBuilding = async (req, res, next) => {
       });
     const building = await db.Building.findOne({
       where: { id },
-      raw: true,
-      nest: true,
-      include: [{ model: db.Floor, as: "floors" }],
+      include: [
+        {
+          model: db.Floor,
+          as: "floors",
+          include: [
+            {
+              model: db.Room,
+              as: "rooms",
+            },
+          ],
+        },
+      ],
     });
 
     return res.status(200).json({
@@ -139,6 +167,12 @@ const updateBuilding = async (req, res, next) => {
   try {
     const id = req.params.id;
     const { name, description } = req.body;
+    const updatePayload = {};
+    if (req.file) {
+      updatePayload.modelURL = req.file.path;
+      updatePayload.modelPublicId = req.file.filename;
+    }
+
     if (!name) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
@@ -146,6 +180,7 @@ const updateBuilding = async (req, res, next) => {
         data: null,
       });
     }
+
     const building = await db.Building.findByPk(id);
     if (!building) {
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -154,10 +189,9 @@ const updateBuilding = async (req, res, next) => {
         data: null,
       });
     }
-    await building.update({
-      name,
-      description,
-    });
+    updatePayload.name = name;
+    updatePayload.description = description;
+    await building.update(updatePayload);
     const updatedBuilding = await db.Building.findByPk(id, { raw: true });
     return res.status(200).json({
       success: true,
