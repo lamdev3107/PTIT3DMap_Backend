@@ -8,5 +8,6 @@ router.delete("/:id", controllers.deleteFloor);
 router.put("/:id", controllers.updateFloor);
 router.get("/:id", controllers.getFloor);
 router.get("/:id/rooms", controllers.getFloorRooms);
+router.get("/:id/scenes", controllers.getFloorScenes);
 
 export default router;

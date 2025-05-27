@@ -38,7 +38,14 @@ const getFloor = async (req, res, next) => {
       });
     const floor = await db.Floor.findOne({
       where: { id },
-      include: [{ model: db.Building, as: "building" }, { model: db.Room, as: "rooms" }],
+      include: [
+        { model: db.Building, as: "building", attributes: ["id", "name"] },
+        { model: db.Room, as: "rooms" },
+        {
+          model: db.Scene,
+          as: "scenes",
+        },
+      ],
       // include: [{ model: db.Room, as: "rooms" }],
     });
 
@@ -109,6 +116,39 @@ const updateFloor = async (req, res, next) => {
     next(error);
   }
 };
+
+const getFloorScenes = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "floor id is required",
+        data: null,
+      });
+    }
+    const floor = await db.Floor.findByPk(id, {
+      include: [{ model: db.Scene, as: "scenes" }],
+    });
+
+    if (!floor) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Room not found",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Room scenes fetched successfully",
+      data: floor.scenes, // Changed from floor.Scene to floor.scenes
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getFloorRooms = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -117,24 +157,28 @@ const getFloorRooms = async (req, res, next) => {
         success: false,
         message: "ID is required",
         data: null,
-      }); 
+      });
     const floor = await db.Floor.findOne({
       where: { id },
-      include: 
-        {
-          model: db.Room,
-          as: "rooms",
-        },
-      
-    })
+      include: {
+        model: db.Room,
+        as: "rooms",
+      },
+    });
     return res.status(200).json({
       success: true,
       message: "Rooms fetched successfully",
       data: floor.rooms,
     });
-  }
-  catch (error) {
+  } catch (error) {
     next(error);
-  } 
-}
-export { createNewFloor, getFloor, deleteFloor, updateFloor, getFloorRooms };
+  }
+};
+export {
+  createNewFloor,
+  getFloor,
+  deleteFloor,
+  updateFloor,
+  getFloorRooms,
+  getFloorScenes,
+};

@@ -12,8 +12,9 @@ module.exports = (sequelize, DataTypes) => {
       Scene.hasMany(models.Hotspot, {
         foreignKey: "scene",
       });
-      Scene.belongsTo(models.Room, {
-        foreignKey: "roomId",
+      Scene.belongsTo(models.Floor, {
+        foreignKey: "floorId",
+        as: "floor",
       });
     }
   }
@@ -23,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         primaryKey: true,
       },
-      roomId: {
+      floorId: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },

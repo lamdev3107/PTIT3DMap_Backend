@@ -5,6 +5,7 @@ import roomRouter from "./room.route";
 import navigationRouter from "./navigation.route";
 import sceneRouter from "./scene.route";
 import authRouter from "./auth.route";
+import homeRouter from "./home.route";
 const initRoutes = (app) => {
   app.use("/api/auth", authRouter);
   app.use("/api/buildings", buildingRouter);
@@ -12,6 +13,7 @@ const initRoutes = (app) => {
   app.use("/api/rooms", roomRouter);
   app.use("/api/scenes", sceneRouter);
   app.use("/api/navigations", navigationRouter);
+  app.use("/api/home", homeRouter);
 
   //Error handling
   app.use(errorHandlingMiddleware);

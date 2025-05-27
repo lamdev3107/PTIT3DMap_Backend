@@ -18,10 +18,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "navigationId",
         as: "navigation",
       });
-      Room.hasMany(models.Scene, {
-        foreignKey: "roomId",
-        as: "scenes",
-      });
     }
   }
   Room.init(

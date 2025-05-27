@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "floorId",
         as: "rooms",
       });
+      Floor.hasMany(models.Scene, {
+        foreignKey: "floorId",
+        as: "scenes",
+      });
     }
   }
   Floor.init(

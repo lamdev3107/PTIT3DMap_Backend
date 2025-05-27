@@ -38,15 +38,15 @@ const createNewBuilding = async (req, res, next) => {
 const getAllBuildings = async (req, res, next) => {
   try {
     const {
-      orderby = "createdAt", // Giá trị mặc định là sắp xếp theo thời gian
-      order = "desc", // Giá trị mặc định là giảm dần (mới nhất trước)
+      orderby = "id", // Giá trị mặc định là sắp xếp theo id
+      order = "asc", // Giá trị mặc định là tăng dần
       page = 1,
       limit = 10,
       search = null,
     } = req.query;
 
     // Kiểm tra orderby hợp lệ
-    const allowedFields = ["id", "name"];
+    const allowedFields = ["id", "name", "createdAt"];
     const allowedOrders = ["asc", "desc"];
     const orderField = allowedFields.includes(orderby) ? orderby : "createdAt";
     const orderDirection = allowedOrders.includes(order.toLowerCase())

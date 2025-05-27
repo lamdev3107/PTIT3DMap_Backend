@@ -61,10 +61,6 @@ const getRoom = async (req, res, next) => {
           model: db.Navigation,
           as: "navigation",
         },
-        {
-          model: db.Scene,
-          as: "scenes",
-        },
       ],
     });
 
@@ -227,42 +223,4 @@ const getAllRooms = async (req, res, next) => {
   }
 };
 
-const getRoomScenes = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: "room id is required",
-        data: null,
-      });
-    }
-    const room = await db.Room.findByPk(id, {
-      include: [{ model: db.Scene, as: "scenes" }],
-    });
-
-    if (!room) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: "Room not found",
-        data: null,
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Room scenes fetched successfully",
-      data: room.scenes, // Changed from room.Scene to room.scenes
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-export {
-  createNewRoom,
-  getRoom,
-  deleteRoom,
-  updateRoom,
-  getAllRooms,
-  getRoomScenes,
-};
+export { createNewRoom, getRoom, deleteRoom, updateRoom, getAllRooms };
